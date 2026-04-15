@@ -1,7 +1,5 @@
-// ==================== NeuroMind IQ Test - script.js ====================
-// نسخة مصححة وجاهزة للإنتاج - خالية من الأخطاء
+// ==================== NeuroMind IQ Test - script.js (نسخة محسّنة) ====================
 
-// === بيانات الأسئلة (مضمّنة لتجنب مشاكل CORS) ===
 const questionsData = {
   "questions": [
     {"id":1,"domain":"visual","difficulty":"easy","q":"أي شكل يُكمل التسلسل؟ ▲ ▼ ▲ ▼ ؟","opts":["▲","▼","◆","●"],"correct":0},
@@ -37,7 +35,6 @@ const questionsData = {
   ]
 };
 
-// === الترجمات (i18n) ===
 const i18n = {
   ar: {
     title: "NeuroMind",
@@ -58,7 +55,7 @@ const i18n = {
     subtitle: "Advanced Scientific IQ Test • 100% Free • Instant • No Signup",
     start: "Start Test Now",
     skip: "Skip",
-    review: "Review Before Submit",
+    review: "Review Answers",
     resultTitle: "Your Result",
     iqLabel: "IQ Score",
     download: "💾 Download Certificate",
@@ -69,7 +66,6 @@ const i18n = {
   }
 };
 
-// === حالة التطبيق ===
 let state = {
   current: 0,
   lang: 'ar',
@@ -82,10 +78,8 @@ let state = {
   started: false
 };
 
-// === مراجع عناصر DOM ===
 const els = {};
 
-// === تهيئة العناصر بعد تحميل الصفحة ===
 function initElements() {
   els.startBtn = document.getElementById('startBtn');
   els.quizScreen = document.getElementById('quiz');
@@ -107,13 +101,11 @@ function initElements() {
   els.screens = document.querySelectorAll('.screen');
 }
 
-// === عرض شاشة وإخفاء الأخرى ===
 function showScreen(id) {
   els.screens.forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// === تطبيق الترجمات ===
 function translate() {
   const t = i18n[state.lang];
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -121,7 +113,6 @@ function translate() {
   });
 }
 
-// === تحديث شريط التقدم الدائري ===
 function updateProgress(percent) {
   const circle = els.progressCircle;
   const radius = 20;
@@ -130,16 +121,13 @@ function updateProgress(percent) {
   circle.style.strokeDashoffset = offset;
 }
 
-// === تحميل سؤال ===
 function loadQuestion() {
   const q = questionsData.questions[state.current];
   els.questionText.textContent = q.q;
   els.qCount.textContent = `${state.current + 1}/${questionsData.questions.length}`;
   
-  // تحديث شريط التقدم
   updateProgress(((state.current) / questionsData.questions.length) * 100);
   
-  // إنشاء خيارات الإجابة
   els.optionsGrid.innerHTML = '';
   const labels = state.lang === 'ar' ? ['أ', 'ب', 'ج', 'د'] : ['A', 'B', 'C', 'D'];
   
@@ -152,32 +140,23 @@ function loadQuestion() {
     els.optionsGrid.appendChild(btn);
   });
 
-  // تفعيل زر التخطي بعد 10 ثوانٍ
-  els.skipBtn.disabled = true;
-  setTimeout(() => {
-    if (state.current === state.current) els.skipBtn.disabled = false;
-  }, 10000);
+  els.skipBtn.disabled = false; // تفعيل زر Skip من البداية
   
-  // إعادة تعيين المؤقت
   resetTimer();
   state.qStartTime = Date.now();
 }
 
-// === اختيار إجابة ===
 function selectAnswer(idx) {
   state.answers[state.current] = idx;
   state.questionTimes[state.current] = Date.now() - state.qStartTime;
   
-  // تحديث الواجهة
   document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
   event.currentTarget.classList.add('selected');
   
-  // الانتقال للسؤال التالي بعد تأخير بسيط
   clearInterval(state.interval);
   setTimeout(nextQuestion, 400);
 }
 
-// === الانتقال للسؤال التالي ===
 function nextQuestion() {
   if (state.current < questionsData.questions.length - 1) {
     state.current++;
@@ -187,7 +166,6 @@ function nextQuestion() {
   }
 }
 
-// === إعادة تعيين المؤقت ===
 function resetTimer() {
   clearInterval(state.interval);
   state.timer = 60;
@@ -198,12 +176,10 @@ function resetTimer() {
     state.timer--;
     els.timerEl.textContent = state.timer;
     
-    // تغيير لون المؤقت عند اقتراب النهاية
     if (state.timer <= 10) els.timerEl.style.color = 'var(--danger)';
     
     if (state.timer <= 0) {
       clearInterval(state.interval);
-      // تسجيل وقت السؤال كـ 60 ثانية إذا انتهى الوقت
       if (state.questionTimes[state.current] === undefined) {
         state.questionTimes[state.current] = 60000;
       }
@@ -212,20 +188,39 @@ function resetTimer() {
   }, 1000);
 }
 
-// === تخطي سؤال ===
+// === دالة Skip محسّنة ===
 function skipQuestion() {
   state.skipped.add(state.current);
-  state.questionTimes[state.current] = 60000; // افتراضي 60 ثانية
-  nextQuestion();
+  state.questionTimes[state.current] = Date.now() - state.qStartTime;
+  
+  // تأثير بصري عند التخطي
+  els.questionText.style.opacity = '0.5';
+  setTimeout(() => {
+    els.questionText.style.opacity = '1';
+    nextQuestion();
+  }, 200);
 }
 
-// === حساب نتيجة الذكاء (مصححة 100%) ===
+// === دالة Review محسّنة ===
+function reviewAnswers() {
+  const answered = Object.keys(state.answers).length;
+  const total = questionsData.questions.length;
+  const skipped = state.skipped.size;
+  
+  const msg = state.lang === 'ar' ? 
+    `📊 ملخص الإجابات:\n\n✅ أجبت على: ${answered} من ${total}\n⏭️ تخطيت: ${skipped} أسئلة\n\nهل تريد المتابعة لإنهاء الاختبار؟` :
+    `📊 Summary:\n\n✅ Answered: ${answered} of ${total}\n⏭️ Skipped: ${skipped} questions\n\nDo you want to continue and finish the test?`;
+  
+  if (confirm(msg)) {
+    finishQuiz();
+  }
+}
+
 function calculateIQ() {
   let raw = 0;
   const domainScores = { visual: 0, numerical: 0, verbal: 0, logical: 0, speed: 0 };
   const domainCounts = { visual: 0, numerical: 0, verbal: 0, logical: 0, speed: 0 };
 
-  // حساب الإجابات الصحيحة
   questionsData.questions.forEach((q, i) => {
     domainCounts[q.domain]++;
     if (state.answers[i] === q.correct) {
@@ -234,38 +229,32 @@ function calculateIQ() {
     }
   });
 
-  // حساب التعديل الزمني (كل إجابة سريعة تضيف نقاط)
   let timeBonus = 0;
   Object.keys(state.questionTimes).forEach(idx => {
     const time = state.questionTimes[idx];
-    if (time < 15000) timeBonus += 0.5;      // أقل من 15 ثانية
-    else if (time > 30000) timeBonus -= 0.3; // أكثر من 30 ثانية
+    if (time < 15000) timeBonus += 0.5;
+    else if (time > 30000) timeBonus -= 0.3;
   });
 
-  // التوزيع الطبيعي المعياري: μ=100, σ=15
-  const mean = 15;  // متوسط الإجابات الصحيحة المتوقع
-  const sd = 5;     // الانحراف المعياري
+  const mean = 15;
+  const sd = 5;
   const adjustedRaw = raw + timeBonus;
   const z = (adjustedRaw - mean) / sd;
   
   let iq = 100 + 15 * z;
-  iq = Math.round(Math.max(55, Math.min(145, iq))); // حدود واقعية
+  iq = Math.round(Math.max(55, Math.min(145, iq)));
 
-  // حساب النسبة المئوية (Percentile)
   const percentile = Math.round(100 * (1 - 0.5 * Math.exp(-z * z / 2)));
 
-  // أسماء المجالات حسب اللغة
   const domainNames = state.lang === 'ar' ? 
     { visual: "بصري", numerical: "عددي", verbal: "لفظي", logical: "منطقي", speed: "سرعة" } :
     { visual: "Visual", numerical: "Numerical", verbal: "Verbal", logical: "Logical", speed: "Speed" };
   
-  // حساب درجات المجالات
   const domains = Object.keys(domainScores).map(d => ({
     name: domainNames[d],
     score: Math.round((domainScores[d] / domainCounts[d]) * 100)
   }));
 
-  // تفسير النتيجة
   let interp = "";
   if (iq < 85) interp = state.lang === 'ar' ? "🔻 أقل من المتوسط" : "🔻 Below Average";
   else if (iq < 100) interp = state.lang === 'ar' ? "🔸 متوسط" : "🔸 Average";
@@ -276,21 +265,18 @@ function calculateIQ() {
   return { iq, percentile, interp, domains, raw: adjustedRaw };
 }
 
-// === إنهاء الاختبار وعرض النتيجة ===
 function finishQuiz() {
   clearInterval(state.interval);
   showScreen('result');
   
   const res = calculateIQ();
   
-  // عرض النتيجة الرئيسية
   els.iqScore.textContent = res.iq;
   els.percentile.textContent = state.lang === 'ar' ? 
     `النسبة المئوية: ${res.percentile}%` : 
     `Percentile: ${res.percentile}%`;
   els.interpretation.textContent = res.interp;
 
-  // عرض توزيع المجالات
   els.domainChart.innerHTML = res.domains.map(d => `
     <div class="domain-bar">
       <div><div class="fill" style="height:0%"></div></div>
@@ -298,78 +284,64 @@ function finishQuiz() {
     </div>
   `).join('');
 
-  // تحريك الأعمدة بتأثير
   setTimeout(() => {
     document.querySelectorAll('.domain-bar .fill').forEach((el, i) => {
       el.style.height = `${res.domains[i].score}%`;
     });
   }, 200);
 
-  // ربط زر التحميل
   els.downloadCert.onclick = () => generateCertificate(res);
 }
 
-// === توليد شهادة النتيجة كصورة ===
 function generateCertificate(res) {
   const canvas = els.certCanvas;
   const ctx = canvas.getContext('2d');
   const isAr = state.lang === 'ar';
   
-  // خلفية الشهادة
   ctx.fillStyle = '#0a0a1a';
   ctx.fillRect(0, 0, 800, 400);
   
-  // إطار علوي ملون
   const gradient = ctx.createLinearGradient(0, 0, 800, 10);
   gradient.addColorStop(0, '#6c5ce7');
   gradient.addColorStop(1, '#00cec9');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 800, 10);
   
-  // العنوان
   ctx.font = 'bold 32px Cairo, sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
   ctx.fillText(isAr ? 'شهادة اختبار الذكاء' : 'IQ Test Certificate', 400, 60);
   
-  // شعار
   ctx.font = '48px serif';
   ctx.fillText('🧠', 400, 110);
   
-  // درجة الذكاء الكبيرة
   ctx.font = 'bold 72px Cairo, sans-serif';
   ctx.fillStyle = '#00cec9';
   ctx.fillText(`${res.iq}`, 400, 200);
   
-  // تسمية الدرجة
   ctx.font = '20px Cairo, sans-serif';
   ctx.fillStyle = '#e0e0ff';
   ctx.fillText(isAr ? 'درجة الذكاء (IQ)' : 'IQ Score', 400, 240);
   
-  // التفاصيل الإضافية
   ctx.font = '16px Cairo, sans-serif';
   ctx.fillStyle = '#8888aa';
   ctx.fillText(`${res.interp} | ${isAr ? 'النسبة المئوية' : 'Percentile'}: ${res.percentile}%`, 400, 275);
   ctx.fillText(new Date().toLocaleDateString(isAr ? 'ar-EG' : 'en-US'), 400, 300);
   
-  // تذييل
   ctx.font = '12px Cairo, sans-serif';
   ctx.fillStyle = '#555577';
   ctx.fillText(isAr ? 'أداة فحص استرشادية - ليست تشخيصاً سريرياً' : 'Screening tool only - Not a clinical diagnosis', 400, 350);
 
-  // تحميل الصورة
   const link = document.createElement('a');
   link.download = `NeuroMind_IQ_${res.iq}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
 }
 
-// === تهيئة التطبيق ===
 function init() {
   initElements();
   translate();
   
-  // زر البدء
   if (els.startBtn) {
     els.startBtn.onclick = () => {
       state.started = true;
@@ -378,27 +350,19 @@ function init() {
     };
   }
   
-  // زر التخطي
   if (els.skipBtn) {
     els.skipBtn.onclick = skipQuestion;
   }
   
-  // زر المراجعة (مؤقت)
   if (els.reviewBtn) {
-    els.reviewBtn.onclick = () => {
-      const msg = state.lang === 'ar' ? 
-        'سيتم إضافة ميزة المراجعة قريباً!' : 
-        'Review feature coming soon!';
-      alert(msg);
-    };
+    // تغيير وظيفة زر Review
+    els.reviewBtn.onclick = reviewAnswers;
   }
   
-  // زر إعادة الاختبار
   if (els.restartBtn) {
     els.restartBtn.onclick = () => location.reload();
   }
   
-  // تبديل اللغة
   if (els.langToggle) {
     els.langToggle.onclick = () => {
       state.lang = state.lang === 'ar' ? 'en' : 'ar';
@@ -409,21 +373,18 @@ function init() {
     };
   }
   
-  // تحميل الشهادة
   if (els.downloadCert) {
     els.downloadCert.onclick = () => {
       alert(state.lang === 'ar' ? 'أكمل الاختبار أولاً!' : 'Complete the test first!');
     };
   }
 
-  // تحذير عند مغادرة الصفحة أثناء الاختبار
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && state.started && state.current < 29) {
       console.log('User left tab during test');
     }
   });
 
-  // حفظ التقدم محلياً (اختياري)
   window.addEventListener('beforeunload', () => {
     if (state.started) {
       localStorage.setItem('neuromind_state', JSON.stringify({
@@ -434,12 +395,10 @@ function init() {
     }
   });
 
-  // استعادة التقدم المحفوظ (اختياري)
   const saved = localStorage.getItem('neuromind_state');
   if (saved && !state.started) {
     // يمكن تفعيل ميزة الاستعادة لاحقاً
   }
 }
 
-// === تشغيل التطبيق عند جاهزية DOM ===
 document.addEventListener('DOMContentLoaded', init);
