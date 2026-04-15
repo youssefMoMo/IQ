@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NeuroMind | اختبار الذكاء العلمي المجاني</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="bg-animation">
+      <div class="orb"></div>
+      <div class="orb"></div>
+      <div class="orb"></div>
+    </div>
+    <div class="neural-grid"></div>
+
+    <main class="container">
+      <!-- شاشة الترحيب -->
+      <section id="welcome" class="screen active">
+        <div class="glass-card hero">
+          <div class="logo">🧠</div>
+          <h1 data-i18n="title">NeuroMind</h1>
+          <p data-i18n="subtitle">
+            اختبار ذكاء علمي متقدم • مجاني 100% • فوري • بدون تسجيل
+          </p>
+          <div class="features">
+            <span>📊 30 سؤال معياري</span>
+            <span>⏱️ قياس زمني ذكي</span>
+            <span>🔬 تحليل 5 مجالات معرفية</span>
+            <span>🆓 لا إعلانات • لا بريد • لا دفع</span>
+          </div>
+          <button id="startBtn" class="btn primary" data-i18n="start">
+            ابدأ الاختبار الآن
+          </button>
+          <p class="disclaimer" data-i18n="disclaimer">
+            ⚠️ هذا المقياس استرشادي علمي ولا يغني عن التقييم السريري المتخصص.
+          </p>
+        </div>
+      </section>
+
+      <!-- شاشة الاختبار -->
+      <section id="quiz" class="screen">
+        <div class="glass-card quiz-container">
+          <div class="quiz-header">
+            <div class="progress-ring">
+              <svg width="50" height="50">
+                <circle
+                  cx="25"
+                  cy="25"
+                  r="20"
+                  fill="none"
+                  stroke="#333"
+                  stroke-width="4"
+                />
+                <circle
+                  id="progressCircle"
+                  cx="25"
+                  cy="25"
+                  r="20"
+                  fill="none"
+                  stroke="var(--accent)"
+                  stroke-width="4"
+                  stroke-dasharray="125.6"
+                  stroke-dashoffset="0"
+                />
+              </svg>
+              <span id="qCount">1/30</span>
+            </div>
+            <div class="timer-box"><span id="timer">60</span>s</div>
+            <button id="langToggle" class="btn small">EN / عربي</button>
+          </div>
+          <div id="questionBox" class="question-box">
+            <h2 id="questionText">...</h2>
+            <div id="optionsGrid" class="options-grid"></div>
+          </div>
+          <div class="quiz-footer">
+            <button
+              id="skipBtn"
+              class="btn secondary"
+              disabled
+              data-i18n="skip"
+            >
+              تخطي (سيظهر بعد 10 ثوانٍ)
+            </button>
+            <button id="reviewBtn" class="btn secondary" data-i18n="review">
+              مراجعة قبل التسليم
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- شاشة النتيجة -->
+      <section id="result" class="screen">
+        <div class="glass-card result-card">
+          <h2 data-i18n="resultTitle">نتيجة اختبارك</h2>
+          <div class="score-ring">
+            <div class="inner">
+              <span id="iqScore">---</span>
+              <small data-i18n="iqLabel">IQ Score</small>
+            </div>
+          </div>
+          <p id="percentile" class="percentile">---</p>
+          <div id="interpretation" class="interpretation">---</div>
+
+          <h3 data-i18n="domainBreakdown">توزيع المجالات المعرفية</h3>
+          <div id="domainChart" class="domain-chart"></div>
+
+          <button id="downloadCert" class="btn primary" data-i18n="download">
+            💾 تحميل شهادة النتيجة
+          </button>
+          <button id="restartBtn" class="btn secondary" data-i18n="restart">
+            🔄 إعادة الاختبار
+          </button>
+          <p class="disclaimer" data-i18n="finalDisclaimer">
+            النتائج تعتمد على التوزيع الطبيعي المعياري (μ=100, σ=15). الدقة ±5
+            نقاط.
+          </p>
+        </div>
+        <canvas
+          id="certCanvas"
+          width="800"
+          height="400"
+          style="display: none"
+        ></canvas>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
